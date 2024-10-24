@@ -2,13 +2,11 @@
 
 # IS107 - Business Intelligence
 
-## Semestral Performance Task
+### Semestral Performance Task
 
 ### Building a Business Intelligence solution for a Retail Store
 
 </div>
-
-<br />
 
 <br />
 
