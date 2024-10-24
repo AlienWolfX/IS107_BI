@@ -1,30 +1,27 @@
 import pandas as pd
 
-"""
-Functions below read the data from the given path
+def readCSV(path):
+    return pd.read_csv(path)
 
-readExcel(path) - reads the data from the excel file
-readCsv(path) - reads the data from the csv file    
-"""
+def transformData(data):
+    cleanedData = data.dropna()
+    # cleanedData = data.fillna(method='ffill')  # using ffill 'https://www.geeksforgeeks.org/python-pandas-dataframe-ffill/'
 
-def readExcel(path):
-    excel = pd.read_excel(path)
-    print(excel.head())
+    for column in cleanedData.select_dtypes(include=['object']).columns:
+        cleanedData.loc[:, column] = cleanedData[column].str.lower()
 
-def readCsv(path):
-    csv = pd.read_csv(path)
-    print(csv.head())
-    
+    return cleanedData
 
-x = input("Choose an Option: ")
+def saveData(data, output):
+    data.to_csv(output, index=False)
 
-match x:
-    case '1':
-        readCsv('archive/train.csv')
-    case '2':
-        readExcel('onlineRetail/onlineRetail.xlsx')
-    case _:
-        print("Invalid Option")
+path = 'dataset/train.csv'
+output = 'dataset/train(cleaned).csv'
 
-# readCsv('archive/train.csv')
-# readExcel('onlineRetail/onlineRetail.xlsx')
+csv = readCSV(path)
+
+transform = transformData(csv)
+
+saveData(transform, output)
+
+print(transform.head())
