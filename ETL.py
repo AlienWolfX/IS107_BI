@@ -1,27 +1,27 @@
 import pandas as pd
 
-def readCSV(path):
-    return pd.read_csv(path)
+file_path = 'dataset/train.csv'
+data = pd.read_csv(file_path)
 
-def transformData(data):
-    cleanedData = data.dropna()
-    # cleanedData = data.fillna(method='ffill')  # using ffill 'https://www.geeksforgeeks.org/python-pandas-dataframe-ffill/'
+# Convert date columns to datetime format
+data['Order Date'] = pd.to_datetime(data['Order Date'], format='%d/%m/%Y', errors='coerce')
+data['Ship Date'] = pd.to_datetime(data['Ship Date'], format='%d/%m/%Y', errors='coerce')
 
-    for column in cleanedData.select_dtypes(include=['object']).columns:
-        cleanedData.loc[:, column] = cleanedData[column].str.lower()
+# This removes the .0 from the postal codes
+data['Postal Code'].fillna(-1, inplace=True)
 
-    return cleanedData
+# Remove duplicate rows
+data.drop_duplicates(inplace=True)
 
-def saveData(data, output):
-    data.to_csv(output, index=False)
+# Standardize categorical data by converting strings to lowercase and stripping extra spaces
+categorical_columns = ['Ship Mode', 'Segment', 'Country', 'City', 'State', 'Region', 'Category', 'Sub-Category']
+for column in categorical_columns:
+    data[column] = data[column].str.strip().str.lower()
 
-path = 'dataset/train.csv'
-output = 'dataset/train(cleaned).csv'
+# Display the cleaned data and info (optional)
+print(data.info())
+print(data.head())
 
-csv = readCSV(path)
-
-transform = transformData(csv)
-
-saveData(transform, output)
-
-print(transform.head())
+# Save the cleaned data to a new CSV file if needed
+cleaned_file_path = 'dataset/cleaned_train.csv'
+data.to_csv(cleaned_file_path, index=False)
