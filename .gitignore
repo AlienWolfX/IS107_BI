@@ -1,3 +1,5 @@
+# Folders
 .env/*
-*.zip
-.xlsx
+
+# Files
+cleaned_train.csv
