@@ -4,41 +4,20 @@
 
 ### Building a Business Intelligence solution for a Retail Store
 
-<br />
+## Installation
 
-#### Notes
+Create and switch environment:
 
-First step is to read the csv file with pandas using read_csv function
+`python -m venv .env`
 
-```bash
-def readCSV(path):
-    return pd.read_csv(path)
-```
+> Powershell is highly recommended.
 
-Next is to transform the data using the process
+`.env/Scripts/activate`
 
-Drop missing values (Destructive?)
+Install dependencies:
 
-```bash
-cleanedData = data.dropna()
-```
+`pip install -r requirements.txt`
 
-Fill missing values ([Refer here](https://www.geeksforgeeks.org/python-pandas-dataframe-ffill/))
+Run: 
 
-```bash
-cleanedData = data.fillna(method='ffill')
-```
-
-Standardize text format (e.g., lowercase)
-
-```bash
-for column in cleanedData.select_dtypes(include=['object']).columns:
-    cleanedData.loc[:, column] = cleanedData[column].str.lower()
-```
-
-Save the cleaned dataset
-
-```bash
-def saveData(data, output):
-    data.to_csv(output, index=False)
-```
+`python3 ETL.py`
