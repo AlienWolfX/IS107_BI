@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 import urllib.parse
 
-load_dotenv('.envi')
+load_dotenv('.env')
 
 db_username = os.getenv('DB_USERNAME')
 db_password = os.getenv('DB_PASSWORD')

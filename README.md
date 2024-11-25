@@ -4,6 +4,11 @@
 
 ### Building a Business Intelligence solution for a Retail Store
 
+## TODO
+
+- [ ] Add keys sa Database
+- [ ] Improvements/Refactoring sa data_warehousing
+
 ## Installation
 
 Create and switch environment:
@@ -20,4 +25,5 @@ Install dependencies:
 
 Run: 
 
-`python3 ETL.py`
+1. `python3 ETL.py`
+2. `python3 data_warehousing.py`

@@ -1,6 +1,6 @@
 # Folders
-.env/*
+.venv/*
 
 # Files
 cleaned_train.csv
-.envi
+.env
