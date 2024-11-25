@@ -7,8 +7,9 @@ data = pd.read_csv(file_path)
 data['Order Date'] = pd.to_datetime(data['Order Date'], format='%d/%m/%Y', errors='coerce')
 data['Ship Date'] = pd.to_datetime(data['Ship Date'], format='%d/%m/%Y', errors='coerce')
 
-# This removes the .0 from the postal codes
+# Fill missing postal codes with -1 and convert to integer type
 data['Postal Code'].fillna(-1, inplace=True)
+data['Postal Code'] = data['Postal Code'].astype(int)
 
 # Remove duplicate rows
 data.drop_duplicates(inplace=True)
