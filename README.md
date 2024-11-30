@@ -22,8 +22,3 @@ Create and switch environment:
 Install dependencies:
 
 `pip install -r requirements.txt`
-
-Run: 
-
-1. `python3 ETL.py`
-2. `python3 data_warehousing.py`

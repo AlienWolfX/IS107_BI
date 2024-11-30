@@ -1,5 +1,6 @@
 import pandas as pd
 
+# Load the dataset
 file_path = 'dataset/train.csv'
 data = pd.read_csv(file_path)
 
@@ -19,10 +20,23 @@ categorical_columns = ['Ship Mode', 'Segment', 'Country', 'City', 'State', 'Regi
 for column in categorical_columns:
     data[column] = data[column].str.strip().str.lower()
 
+# Handle missing values for numerical columns by filling with the median
+numerical_columns = ['Sales']
+for column in numerical_columns:
+    data[column].fillna(data[column].median(), inplace=True)
+
+# Detect and handle outliers in the 'Sales' column using the IQR method
+Q1 = data['Sales'].quantile(0.25)
+Q3 = data['Sales'].quantile(0.75)
+IQR = Q3 - Q1
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+data = data[(data['Sales'] >= lower_bound) & (data['Sales'] <= upper_bound)]
+
 # Display the cleaned data and info (optional)
 print(data.info())
 print(data.head())
 
-# Save the cleaned data to a new CSV file if needed
+# Save the cleaned data to a new CSV file
 cleaned_file_path = 'dataset/cleaned_train.csv'
 data.to_csv(cleaned_file_path, index=False)

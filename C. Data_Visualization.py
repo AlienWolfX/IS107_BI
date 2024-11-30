@@ -59,6 +59,8 @@ total_orders = sales_data['order_id'].nunique()
 top_selling_products = sales_data.groupby('product_name')['sales'].sum().nlargest(5)
 sales_by_region = sales_data.groupby('region')['sales'].sum()
 sales_by_sub_category = sales_data.groupby('sub_category')['sales'].sum()
+sales_by_segment = sales_data.groupby('segment')['sales'].sum()
+sales_over_time = sales_data.groupby('order_date')['sales'].sum()
 
 # Display key metrics
 st.title('Sales Dashboard')
@@ -83,13 +85,11 @@ st.plotly_chart(fig)
 
 # Display sales over time
 st.subheader('Sales Over Time')
-sales_over_time = sales_data.groupby('order_date')['sales'].sum()
 fig = px.line(sales_over_time, x=sales_over_time.index, y='sales', labels={'x': 'Order Date', 'sales': 'Sales'})
 st.plotly_chart(fig)
 
 # Display sales by segment
 st.subheader('Sales by Segment')
-sales_by_segment = sales_data.groupby('segment')['sales'].sum()
 fig = px.pie(sales_by_segment, values='sales', names=sales_by_segment.index, title='Sales by Segment')
 st.plotly_chart(fig)
 
