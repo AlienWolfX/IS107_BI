@@ -1,11 +1,35 @@
+:root {
+    --background-color: #f0f2f6;
+    --text-color: #333;
+    --button-bg-color: #4CAF50;
+    --button-hover-bg-color: #45a049;
+    --metric-bg-color: #ffffff;
+    --sidebar-bg-color: #ffffff;
+    --title-color: #4CAF50;
+    --header-color: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #ebd2d2;
+        --text-color: #f0f2f6;
+        --button-bg-color: #3e8e41;
+        --button-hover-bg-color: #367c39;
+        --metric-bg-color: #e2cfcf;
+        --sidebar-bg-color: #e0d5d5;
+        --title-color: #4CAF50;
+        --header-color: #000000;
+    }
+}
+
 body {
-    background-color: #f0f2f6;
-    color: #333;
+    background-color: var(--background-color);
+    color: var(--text-color);
     font-family: 'Arial', sans-serif;
 }
 
 .stButton>button {
-    background-color: #4CAF50;
+    background-color: var(--button-bg-color);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -20,32 +44,32 @@ body {
 }
 
 .stButton>button:hover {
-    background-color: #45a049;
+    background-color: var(--button-hover-bg-color);
 }
 
 .stMetric {
-    background-color: #ffffff;
+    background-color: var(--metric-bg-color);
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .stSidebar {
-    background-color: #ffffff;
+    background-color: var(--sidebar-bg-color);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .stTitle {
-    color: #4CAF50;
+    color: var(--title-color);
     font-size: 2.5em;
     font-weight: bold;
     margin-bottom: 20px;
 }
 
 .stHeader {
-    color: #bb9797;
+    color: var(--header-color);
     font-size: 1.5em;
     font-weight: bold;
     margin-top: 20px;
