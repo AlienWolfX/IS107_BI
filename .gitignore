@@ -1,7 +1,9 @@
 # Folders
 .venv/*
-.streanlit/*
+.streamlit/*
 
 # Files
 cleaned_train.csv
 .env
+*.sql
+secrets.toml

@@ -17,14 +17,25 @@ from sklearn.metrics import mean_squared_error, r2_score
 # Load environment variables from .env file
 load_dotenv()
 
-# Database connection parameters
-db_params = {
-    'dbname': os.getenv('DB_NAME'),
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),
-    'host': os.getenv('DB_HOST'),
-    'port': os.getenv('DB_PORT')
-}
+# Check if running in production
+if os.getenv('PRODUCTION') == '1':
+    # Use Streamlit secrets for database connection parameters
+    db_params = {
+        'dbname': st.secrets["DB_NAME"],
+        'user': st.secrets["DB_USERNAME"],
+        'password': st.secrets["DB_PASSWORD"],
+        'host': st.secrets["DB_HOST"],
+        'port': st.secrets["DB_PORT"]
+    }
+else:
+    # Use environment variables from .env file for database connection parameters
+    db_params = {
+        'dbname': os.getenv('DB_NAME'),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD'),
+        'host': os.getenv('DB_HOST'),
+        'port': os.getenv('DB_PORT')
+    }
 
 # Connect to PostgreSQL
 conn = psycopg2.connect(**db_params)
