@@ -4,11 +4,6 @@
 
 ### Building a Business Intelligence solution for a Retail Store
 
-## TODO
-
-- [ ] Add keys sa Database
-- [ ] Improvements/Refactoring sa data_warehousing
-
 ## Installation
 
 Create and switch environment:
