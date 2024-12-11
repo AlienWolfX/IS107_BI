@@ -17,6 +17,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 # Load environment variables from .env file
 load_dotenv()
 
+print(os.getenv('PRODUCTION'))
 # Check if running in production
 if os.getenv('PRODUCTION') == '1':
     # Use Streamlit secrets for database connection parameters
@@ -27,8 +28,7 @@ if os.getenv('PRODUCTION') == '1':
         'host': st.secrets["DB_HOST"],
         'port': st.secrets["DB_PORT"]
     }
-else:
-    # Use environment variables from .env file for database connection parameters
+elif os.getenv('PRODUCTION') == '0':
     db_params = {
         'dbname': os.getenv('DB_NAME'),
         'user': os.getenv('DB_USER'),
@@ -36,6 +36,8 @@ else:
         'host': os.getenv('DB_HOST'),
         'port': os.getenv('DB_PORT')
     }
+else:
+    raise ValueError('Invalid value for PRODUCTION environment variable')
 
 # Connect to PostgreSQL
 conn = psycopg2.connect(**db_params)
@@ -54,10 +56,6 @@ JOIN dim_customers c ON s.customer_id = c.customer_id
 JOIN dim_products p ON s.product_id = p.product_id
 '''
 sales_data = load_data(sales_query)
-
-# Load custom CSS for styling
-with open('asset/css/style.css') as f:
-    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Sidebar filters
 st.sidebar.header('Filters')
@@ -87,40 +85,40 @@ sales_by_segment = sales_data.groupby('segment')['sales'].sum()
 sales_over_time = sales_data.groupby('order_date')['sales'].sum()
 
 # Display key metrics
-st.markdown('<div class="stTitle">Sales Dashboard</div>', unsafe_allow_html=True)
-st.markdown('<div class="stHeader">Key Metrics</div>', unsafe_allow_html=True)
+st.title('Sales Dashboard')
+st.header('Key Metrics')
 col1, col2, col3 = st.columns(3)
 col1.metric('Total Sales', f"${total_sales:,.2f}")
 col2.metric('Average Sales', f"${average_sales:,.2f}")
 col3.metric('Total Orders', total_orders)
 
 # Display top-selling products
-st.markdown('<div class="stHeader">Top Selling Products</div>', unsafe_allow_html=True)
+st.header('Top Selling Products')
 fig = px.bar(top_selling_products, x=top_selling_products.index, y='sales', labels={'x': 'Product Name', 'sales': 'Sales'}, template='plotly_dark')
 st.plotly_chart(fig)
 
 # Display sales by region
-st.markdown('<div class="stHeader">Sales by Region</div>', unsafe_allow_html=True)
+st.header('Sales by Region')
 fig = px.bar(sales_by_region, x=sales_by_region.index, y='sales', labels={'x': 'Region', 'sales': 'Sales'}, template='plotly_dark')
 st.plotly_chart(fig)
 
 # Display sales by sub-category
-st.markdown('<div class="stHeader">Sales by Sub-Category</div>', unsafe_allow_html=True)
+st.header('Sales by Sub-Category')
 fig = px.bar(sales_by_sub_category, x=sales_by_sub_category.index, y='sales', labels={'x': 'Sub-Category', 'sales': 'Sales'}, template='plotly_dark')
 st.plotly_chart(fig)
 
 # Display sales over time
-st.markdown('<div class="stHeader">Sales Over Time</div>', unsafe_allow_html=True)
+st.header('Sales Over Time')
 fig = px.line(sales_over_time, x=sales_over_time.index, y='sales', labels={'x': 'Order Date', 'sales': 'Sales'}, template='plotly_dark')
 st.plotly_chart(fig)
 
 # Display sales by segment
-st.markdown('<div class="stHeader">Sales by Segment</div>', unsafe_allow_html=True)
+st.header('Sales by Segment')
 fig = px.pie(sales_by_segment, values='sales', names=sales_by_segment.index, title='Sales by Segment', template='plotly_dark')
 st.plotly_chart(fig)
 
 # Data Mining: Customer Segmentation using K-Means Clustering
-st.markdown('<div class="stHeader">Customer Segmentation</div>', unsafe_allow_html=True)
+st.header('Customer Segmentation')
 # Preprocess the data for clustering
 data = sales_data.copy()
 data['Segment'] = data['segment'].astype('category').cat.codes
@@ -139,7 +137,7 @@ sns.scatterplot(data=data, x='sales', y='Segment', hue='cluster', palette='virid
 st.pyplot(fig)
 
 # Data Mining: Predictive Analysis using Linear Regression
-st.markdown('<div class="stHeader">Predictive Analysis</div>', unsafe_allow_html=True)
+st.header('Predictive Analysis')
 # Preprocess the data for linear regression
 data['order_date'] = pd.to_datetime(data['order_date'])
 data['Year'] = data['order_date'].dt.year
@@ -196,7 +194,7 @@ st.write(f'Mean Squared Error (Random Forest Regression): {forest_mse}')
 st.write(f'R^2 Score (Random Forest Regression): {forest_r2}')
 
 # Visualize the actual vs predicted sales for all models
-st.markdown('<div class="stHeader">Actual vs Predicted Sales</div>', unsafe_allow_html=True)
+st.header('Actual vs Predicted Sales')
 fig, ax = plt.subplots()
 plt.scatter(y_test, linear_y_pred, alpha=0.5, label='Linear Regression')
 plt.scatter(y_test, tree_y_pred, alpha=0.5, label='Decision Tree Regression', color='red')
@@ -213,7 +211,7 @@ feature_names = X.columns
 forest_importances = pd.Series(importances, index=feature_names)
 
 # Visualize feature importances
-st.markdown('<div class="stHeader">Feature Importances from Random Forest</div>', unsafe_allow_html=True)
+st.header('Feature Importances from Random Forest')
 fig, ax = plt.subplots()
 forest_importances.sort_values().plot(kind='barh', ax=ax)
 plt.title('Feature Importances from Random Forest')
