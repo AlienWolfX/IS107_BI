@@ -5,5 +5,5 @@
 # Files
 cleaned_train.csv
 .env
-*.sql
+bi_dump.sql
 secrets.toml
