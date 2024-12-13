@@ -1,4 +1,7 @@
 import pandas as pd
+import psycopg2
+from dotenv import load_dotenv
+import os
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -10,15 +13,40 @@ from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Load the dataset for clustering and regression
-data = pd.read_csv('dataset/cleaned_train.csv')
+# Load environment variables from .env file
+load_dotenv()
+
+db_params = {
+    'dbname': os.getenv('DB_NAME'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'host': os.getenv('DB_HOST'),
+    'port': os.getenv('DB_PORT')
+}
+
+# Connect to PostgreSQL
+conn = psycopg2.connect(**db_params)
+
+def load_data(query):
+    return pd.read_sql(query, conn)
+
+# Load sales data
+sales_query = '''
+SELECT s.order_id, s.order_date, s.ship_date, s.ship_mode, s.sales, 
+       c.customer_name, c.segment, c.country, c.city, c.state, c.region, 
+       p.product_name, p.category, p.sub_category
+FROM fact_sales s
+JOIN dim_customers c ON s.customer_id = c.customer_id
+JOIN dim_products p ON s.product_id = p.product_id
+'''
+data = load_data(sales_query)
 
 # Preprocess the data for clustering
 # Using 'Sales', 'Segment', and 'Region' for clustering
 # Convert categorical variables to numerical
-data['Segment'] = data['Segment'].astype('category').cat.codes
-data['Region'] = data['Region'].astype('category').cat.codes
-features = data[['Sales', 'Segment', 'Region']]
+data['Segment'] = data['segment'].astype('category').cat.codes
+data['Region'] = data['region'].astype('category').cat.codes
+features = data[['sales', 'Segment', 'Region']]
 scaler = StandardScaler()
 scaled_features = scaler.fit_transform(features)
 
@@ -31,12 +59,12 @@ plt.figure(figsize=(15, 10))
 
 # Plot 1: Sales vs Segment
 plt.subplot(2, 2, 1)
-sns.scatterplot(data=data, x='Sales', y='Segment', hue='cluster', palette='viridis')
+sns.scatterplot(data=data, x='sales', y='Segment', hue='cluster', palette='viridis')
 plt.title('Sales vs Segment by Cluster')
 
 # Plot 2: Sales vs Region
 plt.subplot(2, 2, 2)
-sns.scatterplot(data=data, x='Sales', y='Region', hue='cluster', palette='viridis')
+sns.scatterplot(data=data, x='sales', y='Region', hue='cluster', palette='viridis')
 plt.title('Sales vs Region by Cluster')
 
 # Plot 3: Region vs Segment
@@ -68,14 +96,14 @@ plt.show()
 
 # Preprocess the data for regression
 # Convert 'Order Date' to datetime and extract features like year, month, day
-data['Order Date'] = pd.to_datetime(data['Order Date'])
-data['Year'] = data['Order Date'].dt.year
-data['Month'] = data['Order Date'].dt.month
-data['Day'] = data['Order Date'].dt.day
+data['order_date'] = pd.to_datetime(data['order_date'])
+data['Year'] = data['order_date'].dt.year
+data['Month'] = data['order_date'].dt.month
+data['Day'] = data['order_date'].dt.day
 
 # Using 'Year', 'Month', 'Day' as features and 'Sales' as target
 X = data[['Year', 'Month', 'Day']]
-y = data['Sales']
+y = data['sales']
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -145,3 +173,6 @@ plt.title('Feature Importances from Random Forest')
 plt.xlabel('Importance')
 plt.ylabel('Feature')
 plt.show()
+
+# Close the database connection
+conn.close()
