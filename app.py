@@ -6,13 +6,14 @@ import os
 import plotly.express as px
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
-import seaborn as sns
+from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Load environment variables from .env file
 load_dotenv()
@@ -84,12 +85,12 @@ fig = px.bar(top_selling_products, x=top_selling_products.index, y='sales', labe
 st.plotly_chart(fig)
 st.markdown(f"""
 *Key Insights:*
-- *Top performing product: {top_selling_products.index[0]} (${top_selling_products.iloc[0]:,.2f} in sales)*
+- *Top product: {top_selling_products.index[0]} (${top_selling_products.iloc[0]:,.2f} in sales)*
 """)
 
 # Display sales by region with insights
 st.header('Sales by Region')
-fig = px.bar(sales_by_region, x=sales_by_region.index, y='sales', labels={'x': 'Region', 'sales': 'Sales'}, template='plotly_dark')
+fig = px.bar(sales_by_region, x=sales_by_region.index, y='sales', labels={'x': 'Region', 'sales': 'Total Sales'}, template='plotly_dark')
 st.plotly_chart(fig)
 st.markdown(f"""
 *Key Insights:*
@@ -106,7 +107,7 @@ st.markdown(f"""
 *Key Insights:*
 - *Top sub-category: {sales_by_sub_category.idxmax()} (${sales_by_sub_category.max():,.2f})*
 - *Bottom sub-category: {sales_by_sub_category.idxmin()} (${sales_by_sub_category.min():,.2f})*
-- *Number of sub-categories: {len(sales_by_sub_category)}*
+- *Number of sub-categories: **{len(sales_by_sub_category)}***
 """)
 
 # Display sales over time with insights
@@ -117,7 +118,7 @@ st.markdown(f"""
 *Key Insights:*
 - *Peak sales day: {sales_over_time.idxmax().strftime('%Y-%m-%d')} (${sales_over_time.max():,.2f})*
 - *Average daily sales: ${sales_over_time.mean():,.2f}*
-- *Sales trend indicates {'upward' if sales_over_time.iloc[-1] > sales_over_time.iloc[0] else 'downward'} movement*
+- *Sales trend indicates {'**upward**' if sales_over_time.iloc[-1] > sales_over_time.iloc[0] else '**downward**'} movement*
 """)
 
 # Display sales by segment with insights
@@ -127,7 +128,7 @@ st.plotly_chart(fig)
 st.markdown(f"""
 *Key Insights:*
 - *Dominant segment: {sales_by_segment.idxmax()} ({(sales_by_segment.max()/sales_by_segment.sum()*100):.1f}% of total sales)*
-- *Smallest segment: {sales_by_segment.idxmin()} ({(sales_by_segment.min()/sales_by_segment.sum()*100):.1f}% of total sales)*
+- *Smallest segment: {sales_by_segment.idxmin()} ({(sales_by_segment.min()/sales_by_segment.sum()*100):,.1f}% of total sales)*
 - *Number of customer segments: {len(sales_by_segment)}*
 """)
 
@@ -145,9 +146,44 @@ scaled_features = scaler.fit_transform(features)
 kmeans = KMeans(n_clusters=3, random_state=42)
 data['cluster'] = kmeans.fit_predict(scaled_features)
 
-# Analyze and visualize the clusters
-fig, ax = plt.subplots()
-sns.scatterplot(data=data, x='sales', y='Segment', hue='cluster', palette='viridis', ax=ax)
+# Create a figure with subplots for cluster analysis
+fig, ax = plt.subplots(figsize=(15, 10))
+
+# Plot 1: Sales vs Segment
+plt.subplot(2, 2, 1)
+sns.scatterplot(data=data, x='sales', y='Segment', hue='cluster', palette='viridis')
+plt.title('Sales vs Segment by Cluster')
+
+# Plot 2: Sales vs Region
+plt.subplot(2, 2, 2)
+sns.scatterplot(data=data, x='sales', y='Region', hue='cluster', palette='viridis')
+plt.title('Sales vs Region by Cluster')
+
+# Plot 3: Region vs Segment
+plt.subplot(2, 2, 3)
+sns.scatterplot(data=data, x='Region', y='Segment', hue='cluster', palette='viridis')
+plt.title('Region vs Segment by Cluster')
+
+# Plot 4: Cluster distribution
+plt.subplot(2, 2, 4)
+sns.countplot(data=data, x='cluster', palette='viridis')
+plt.title('Distribution of Clusters')
+
+plt.tight_layout()
+st.pyplot(fig)
+
+# Apply PCA for dimensionality reduction
+pca = PCA(n_components=2)
+pca_features = pca.fit_transform(scaled_features)
+data['pca1'] = pca_features[:, 0]
+data['pca2'] = pca_features[:, 1]
+
+# Visualize the PCA results
+fig, ax = plt.subplots(figsize=(10, 6))
+sns.scatterplot(x='pca1', y='pca2', hue='cluster', data=data, palette='viridis')
+plt.title('PCA of Customer Segmentation')
+plt.xlabel('PCA X axis')
+plt.ylabel('PCA Y axis')
 st.pyplot(fig)
 
 # Add insights for Customer Segmentation
@@ -170,7 +206,6 @@ st.markdown("""
 ### Cluster Analysis Summary:
 """)
 
-# Update cluster analysis display
 for cluster in range(3):
     avg_sales = cluster_insights['sales']['mean'][cluster]
     count = cluster_insights['sales']['count'][cluster]
@@ -190,9 +225,8 @@ for cluster in range(3):
     - **Sales Variation**: ${cluster_insights['sales']['std'][cluster]:,.2f}
     """)
 
-# Data Mining: Predictive Analysis using Linear Regression
+# Predictive Analysis
 st.header('Predictive Analysis')
-# Preprocess the data for linear regression
 data['order_date'] = pd.to_datetime(data['order_date'])
 data['Year'] = data['order_date'].dt.year
 data['Month'] = data['order_date'].dt.month
@@ -226,28 +260,23 @@ tree_model.fit(X_train, y_train)
 # Make predictions
 tree_y_pred = tree_model.predict(X_test)
 
-# Evaluate the model
 tree_mse = mean_squared_error(y_test, tree_y_pred)
 tree_r2 = r2_score(y_test, tree_y_pred)
 
 st.write(f'Mean Squared Error (Decision Tree Regression): {tree_mse}')
 st.write(f'R^2 Score (Decision Tree Regression): {tree_r2}')
 
-# Train a random forest regression model
 forest_model = RandomForestRegressor(random_state=42)
 forest_model.fit(X_train, y_train)
 
-# Make predictions
 forest_y_pred = forest_model.predict(X_test)
 
-# Evaluate the model
 forest_mse = mean_squared_error(y_test, forest_y_pred)
 forest_r2 = r2_score(y_test, forest_y_pred)
 
 st.write(f'Mean Squared Error (Random Forest Regression): {forest_mse}')
 st.write(f'R^2 Score (Random Forest Regression): {forest_r2}')
 
-# Add insights for Predictive Analysis
 st.markdown(f"""
 *Model Performance Insights:*
 - *Best performing model: {
@@ -261,7 +290,6 @@ st.markdown(f"""
   * *Random Forest: {forest_r2:.2%}*
 """)
 
-# Add after the predictive analysis section
 st.markdown("""
 ## Sales Prediction Insights
 
@@ -286,7 +314,6 @@ st.markdown(f"""
 - **Seasonal Patterns**: Most sales occur in {'Q4' if data.groupby('Month')['sales'].mean().idxmax() > 9 else 'Q2'}
 """)
 
-# Visualize the actual vs predicted sales for all models
 st.header('Actual vs Predicted Sales')
 fig, ax = plt.subplots()
 plt.scatter(y_test, linear_y_pred, alpha=0.5, label='Linear Regression')
@@ -298,12 +325,10 @@ plt.title('Actual vs Predicted Sales')
 plt.legend()
 st.pyplot(fig)
 
-# Feature importance analysis for Random Forest
 importances = forest_model.feature_importances_
 feature_names = X.columns
 forest_importances = pd.Series(importances, index=feature_names)
 
-# Visualize feature importances
 st.header('Feature Importances from Random Forest')
 fig, ax = plt.subplots()
 forest_importances.sort_values().plot(kind='barh', ax=ax)
@@ -311,27 +336,6 @@ plt.title('Feature Importances from Random Forest')
 plt.xlabel('Importance')
 plt.ylabel('Feature')
 st.pyplot(fig)
-
-# Add after feature importance visualization
-st.markdown("""
-## Business Recommendations
-
-### Based on Analysis:
-1. **Customer Strategy**:
-   - Focus on high-value cluster for retention
-   - Develop targeted promotions for each segment
-   - Geographic expansion opportunities identified
-
-2. **Sales Optimization**:
-   - Leverage predictive models for inventory planning
-   - Focus on top-performing product categories
-   - Adjust regional strategies based on performance
-
-3. **Future Planning**:
-   - Implement {best_model['Model']} for sales forecasting
-   - Monitor seasonal patterns for stock management
-   - Develop region-specific growth strategies
-""")
 
 # Close the database connection
 conn.close()

@@ -40,3 +40,5 @@ print(data.head())
 # Save the cleaned data to a new CSV file
 cleaned_file_path = 'dataset/cleaned_train.csv'
 data.to_csv(cleaned_file_path, index=False)
+
+# 18 Columns before and after cleaning

@@ -26,9 +26,30 @@ scaled_features = scaler.fit_transform(features)
 kmeans = KMeans(n_clusters=3, random_state=42)
 data['cluster'] = kmeans.fit_predict(scaled_features)
 
-# Analyze and visualize the clusters
-sns.pairplot(data, hue='cluster', vars=['Sales', 'Segment', 'Region'])
-plt.title('Customer Segmentation using K-Means Clustering')
+# Create a figure with subplots for cluster analysis
+plt.figure(figsize=(15, 10))
+
+# Plot 1: Sales vs Segment
+plt.subplot(2, 2, 1)
+sns.scatterplot(data=data, x='Sales', y='Segment', hue='cluster', palette='viridis')
+plt.title('Sales vs Segment by Cluster')
+
+# Plot 2: Sales vs Region
+plt.subplot(2, 2, 2)
+sns.scatterplot(data=data, x='Sales', y='Region', hue='cluster', palette='viridis')
+plt.title('Sales vs Region by Cluster')
+
+# Plot 3: Region vs Segment
+plt.subplot(2, 2, 3)
+sns.scatterplot(data=data, x='Region', y='Segment', hue='cluster', palette='viridis')
+plt.title('Region vs Segment by Cluster')
+
+# Plot 4: Cluster distribution
+plt.subplot(2, 2, 4)
+sns.countplot(data=data, x='cluster', palette='viridis')
+plt.title('Distribution of Clusters')
+
+plt.tight_layout()
 plt.show()
 
 # Apply PCA for dimensionality reduction
@@ -41,8 +62,8 @@ data['pca2'] = pca_features[:, 1]
 plt.figure(figsize=(10, 6))
 sns.scatterplot(x='pca1', y='pca2', hue='cluster', data=data, palette='viridis')
 plt.title('PCA of Customer Segmentation')
-plt.xlabel('Principal Component 1')
-plt.ylabel('Principal Component 2')
+plt.xlabel('PCA X axis')
+plt.ylabel('PCA Y axis')
 plt.show()
 
 # Preprocess the data for regression
